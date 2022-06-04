@@ -1,0 +1,20 @@
+when INIT {
+set ::CookieHASH XAW-SOR-DLA
+set ::Salt "DF!f32fdE!@FKjfoj292hf29h9@(FJFO"
+}
+when HTTP_REQUEST {
+set host [HTTP::host]
+set uri [HTTP::uri]
+set hashREQ [md5 [IP::client_addr]$Salt$uri]
+set passcookie 0
+if { [HTTP::cookie exists $::CookieHASH]  } {
+set hashFromCookie [HTTP::cookie value $CookieHASH ]
+if { $hashFromCookie != $hashREQ } {
+HTTP::cookie remove $CookieHASH
+HTTP::respond 302 Location "https://$host$uri" "Set-Cookie" "$CookieHASH=$hashREQ;path=/; secure"
+}
+} else {
+HTTP::respond 302 Location "https://$host$uri" "Set-Cookie" "$CookieHASH=$hashREQ;path=/; secure"
+}
+}
+-----END
